@@ -11,6 +11,13 @@ const YEAR = 2026;
 const at = (day: number, hour = 0, minute = 0) => new Date(Date.UTC(YEAR, 10, day, hour, minute));
 
 async function main() {
+  // Idempotent: hosted builds run the seed. Never wipe existing data on redeploy.
+  const existing = await prisma.employee.count();
+  if (existing > 0) {
+    console.log(`Seed skipped: ${existing} employee(s) already present.`);
+    return;
+  }
+
   await prisma.auditLog.deleteMany();
   await prisma.attendanceRecord.deleteMany();
   await prisma.leaveRequest.deleteMany();
