@@ -2,7 +2,7 @@ import { jwtVerify } from 'jose';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const COOKIE = 'elams_session';
-const PUBLIC_PATHS = ['/login', '/api/auth/login', '/api/_debug'];
+const PUBLIC_PATHS = ['/login', '/api/auth/login'];
 
 function key() {
   return new TextEncoder().encode(
