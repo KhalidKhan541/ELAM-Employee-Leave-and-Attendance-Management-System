@@ -1,0 +1,28 @@
+[
+  {
+    "version": "1.0.0",
+    "date": "2026-11-06",
+    "tag": "v1.0.0",
+    "features": ["Authentication and roles", "Employee master records", "Attendance check-in/out"],
+    "status": "superseded"
+  },
+  {
+    "version": "1.1.0",
+    "date": "2026-11-13",
+    "tag": "v1.1.0",
+    "features": ["Leave requests and balances", "Two-step approval (CR-01)", "Late flag (CR-02)"],
+    "status": "superseded"
+  },
+  {
+    "version": "1.2.0",
+    "date": "2026-11-21",
+    "tag": "v1.2.0",
+    "features": [
+      "HR reports and CSV export (CR-03)",
+      "Light information-first UI (CR-04)",
+      "Fault-tolerant reporting",
+      "Guarded backup/restore (CR-05)"
+    ],
+    "status": "current"
+  }
+]
