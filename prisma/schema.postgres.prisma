@@ -1,0 +1,125 @@
+// ELAM — production schema (PostgreSQL on Vercel).
+// Kept identical to schema.prisma except the datasource provider.
+// scripts/use-postgres-schema.mjs copies this file over schema.prisma at build time.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  managerId String? @unique
+  employees Employee[] @relation("DepartmentEmployees")
+  managedBy Employee?  @relation("DepartmentManager", fields: [managerId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Employee {
+  id             String            @id @default(cuid())
+  email          String            @unique
+  fullName       String
+  departmentId   String
+  joiningDate    DateTime
+  role           String            @default("EMPLOYEE")
+  active         Boolean           @default(true)
+  department     Department        @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  managedDepartment Department?     @relation("DepartmentManager")
+  userAccount    UserAccount?
+  attendance     AttendanceRecord[]
+  leaveBalances  LeaveBalance[]
+  leaveRequests  LeaveRequest[]
+  auditLogs      AuditLog[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model UserAccount {
+  id           String    @id @default(cuid())
+  employeeId   String    @unique
+  passwordHash String
+  lastLoginAt  DateTime?
+  employee     Employee  @relation(fields: [employeeId], references: [id])
+}
+
+model LeaveType {
+  id              String         @id @default(cuid())
+  code            String         @unique
+  name            String
+  annualAllowance Int
+  carryForwardCap Int
+  requiresHR      Boolean        @default(false)
+  balances        LeaveBalance[]
+  requests        LeaveRequest[]
+}
+
+model LeaveBalance {
+  id          String    @id @default(cuid())
+  employeeId  String
+  leaveTypeId String
+  year        Int
+  opening     Int       @default(0)
+  carriedIn   Int       @default(0)
+  accrued     Int       @default(0)
+  used        Int       @default(0)
+  reserved    Int       @default(0)
+  employee    Employee  @relation(fields: [employeeId], references: [id])
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@unique([employeeId, leaveTypeId, year])
+}
+
+model LeaveRequest {
+  id              String    @id @default(cuid())
+  employeeId      String
+  leaveTypeId     String
+  startDate       DateTime
+  endDate         DateTime
+  reason          String
+  workingDays     Int
+  status          String    @default("PENDING_MANAGER")
+  decisionComment String?
+  decidedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  employee        Employee  @relation(fields: [employeeId], references: [id])
+  leaveType       LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@index([employeeId, status])
+  @@index([status])
+}
+
+model AttendanceRecord {
+  id         String    @id @default(cuid())
+  employeeId String
+  date       DateTime
+  checkIn    DateTime?
+  checkOut   DateTime?
+  status     String    @default("CHECKED_IN")
+  late       Boolean   @default(false)
+  hours      Float?
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+
+  @@unique([employeeId, date])
+  @@index([date])
+}
+
+model AuditLog {
+  id       String   @id @default(cuid())
+  actorId  String
+  action   String
+  entity   String
+  entityId String
+  oldValue String?
+  newValue String?
+  at       DateTime @default(now())
+  actor    Employee @relation(fields: [actorId], references: [id])
+
+  @@index([entity, entityId])
+}
