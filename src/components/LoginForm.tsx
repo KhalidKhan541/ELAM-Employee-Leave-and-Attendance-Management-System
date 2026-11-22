@@ -3,18 +3,10 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-type Demo = { label: string; email: string };
-
-const demos: Demo[] = [
-  { label: 'HR', email: 'hr@elams.test' },
-  { label: 'Manager', email: 'manager@elams.test' },
-  { label: 'Employee', email: 'employee@elams.test' },
-];
-
 export function LoginForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('employee@elams.test');
-  const [password, setPassword] = useState('Password123!');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -78,26 +70,6 @@ export function LoginForm() {
       <button className="btn-primary w-full" type="submit" disabled={busy}>
         {busy ? 'Signing in…' : 'Sign in'}
       </button>
-
-      <div className="border-t border-slate-200 pt-4">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Demo accounts</p>
-        <div className="flex flex-wrap gap-2">
-          {demos.map((demo) => (
-            <button
-              key={demo.email}
-              type="button"
-              className="rounded border border-slate-200 px-2.5 py-1 text-xs text-slate-600 hover:border-accent-500 hover:text-accent-700"
-              onClick={() => {
-                setEmail(demo.email);
-                setPassword('Password123!');
-                setError('');
-              }}
-            >
-              {demo.label}
-            </button>
-          ))}
-        </div>
-      </div>
     </form>
   );
 }
