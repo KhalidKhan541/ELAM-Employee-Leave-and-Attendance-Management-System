@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { emailFromName } from '@/lib/email';
 
 export function EmployeeForm({ departments }: { departments: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -50,11 +51,22 @@ export function EmployeeForm({ departments }: { departments: { id: string; name:
     <form onSubmit={submit} className="card mb-6 grid gap-4 p-5 sm:grid-cols-2">
       <div>
         <label className="label" htmlFor="fullName">Full name</label>
-        <input className="input" id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+        <input
+          className="input"
+          id="fullName"
+          value={fullName}
+          onChange={(e) => {
+            const name = e.target.value;
+            setFullName(name);
+            setEmail(emailFromName(name)); // personalised @elam.com address
+          }}
+          required
+        />
       </div>
       <div>
         <label className="label" htmlFor="email">Work email</label>
         <input className="input" id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        <p className="mt-1 text-[11px] text-slate-500">Generated from the name; edit if needed.</p>
       </div>
       <div>
         <label className="label" htmlFor="department">Department</label>
