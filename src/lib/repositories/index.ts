@@ -29,13 +29,20 @@ export function createRepos(client: Client): DomainRepositories {
   const employees: EmployeeRepository = {
     findById: async (id) =>
       withRetry(() => client.employee.findUnique({ where: { id } })) as Promise<EmployeeRecord | null>,
-    findByEmail: async (email) =>
-      withRetry(() => client.employee.findUnique({ where: { email }, include: { userAccount: true } })).then(
-        (row) =>
-          row
-            ? { ...row, passwordHash: row.userAccount?.passwordHash ?? '' }
-            : null,
-      ) as Promise<(EmployeeRecord & { passwordHash: string }) | null>,
+    findByEmail: async (email) => {
+      // Emails are stored as FirstNameLastName@elam.com (mixed case) while the
+      // login form normalises input to lowercase, so compare case-insensitively.
+      // Works on both SQLite (local) and PostgreSQL (production).
+      const rows = await withRetry(() =>
+        client.employee.findMany({ include: { userAccount: true } }),
+      );
+      const match = rows.find(
+        (row) => row.email.toLowerCase() === email.trim().toLowerCase(),
+      );
+      return match
+        ? ({ ...match, passwordHash: match.userAccount?.passwordHash ?? '' } as EmployeeRecord & { passwordHash: string })
+        : null;
+    },
     list: async () => withRetry(() => client.employee.findMany({ orderBy: { fullName: 'asc' } })) as Promise<EmployeeRecord[]>,
     create: async (input) => {
       const { passwordHash, ...rest } = input;
